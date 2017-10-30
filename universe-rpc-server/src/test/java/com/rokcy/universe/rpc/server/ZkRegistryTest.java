@@ -28,17 +28,16 @@ public class ZkRegistryTest {
     }
     @Test
     public void register() throws Exception {
-        Registry registry = new ZkRegistry(zkConnect);
-        registry.register("/hello/rocky", "test");
+        Registry registry = new ZkRegistry(zkConnect, "/hello/rocky", "test");
+        registry.register();
     }
 
     @Test
     public void unregister() throws Exception {
-        Registry registry = new ZkRegistry(zkConnect);
-        String url = "/hello/unregister";
-        registry.register(url, "nothing");
+        Registry registry = new ZkRegistry(zkConnect, "/hello/unregister", "nothing");
+        registry.register();
         Thread.sleep(1000L);
-        registry.unregister(url);
+        registry.unregister();
     }
 
 }

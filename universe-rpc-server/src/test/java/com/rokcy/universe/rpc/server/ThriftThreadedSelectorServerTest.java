@@ -33,7 +33,7 @@ public class ThriftThreadedSelectorServerTest {
     String zkConnect;
     @Before
     public void init(){
-        zkConnect = "192.168.60.12:2181,192.168.60.25:2181,192.168.60.26:2181,192.168.60.37:2181,192.168.60.38:2181,192.168.60.39:2181,192.168.60.40:2181";
+        zkConnect = "192.168.60.40:2181";
     }
     @Test
     public void singleHandlerStartTest() throws TException, InterruptedException {
@@ -160,12 +160,8 @@ public class ThriftThreadedSelectorServerTest {
     public void serverStartTest() throws InterruptedException {
         List<Object> handlers = Lists.newArrayList((Object) new SayHelloHandler());
         Server server = new ThriftThreadedSelectorServer(handlers, "test", "default", 8421, zkConnect, 2);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                server.start();
-            }
-        });
+        server.start();
+        while (true);
     }
 
 //    @Test

@@ -28,14 +28,18 @@ public abstract class AbstractServer implements Server{
         this.group = group;
         this.port = port;
         this.id = UUID.randomUUID().toString();
-        registry = new ZkRegistry(zkConnect);
+        String registerUrl = registerUrl(this.app, this.id);
+        ServerInfo serverInfo = new ServerInfo(this.app, ip(), this.port, this.group, this.id,
+                Lists.newArrayList(this.interfaceHandlerMap.keySet()));
+        String registerData = registerData(serverInfo);
+        registry = new ZkRegistry(zkConnect, registerUrl, registerData);
     }
 
     public String getId() {
         return id;
     }
 
-    protected String ip() {
+    private static String ip() {
         try {
             return InetAddress.getLocalHost().getHostAddress();
         } catch (UnknownHostException e) {
@@ -44,15 +48,11 @@ public abstract class AbstractServer implements Server{
     }
 
     protected void register() {
-        String registryUrl = registryUrlPrefix + app + "/" + getId();
-        List<Class> interfaces = Lists.newArrayList(interfaceHandlerMap.keySet());
-        ServerInfo serverInfo = new ServerInfo(app, ip(), port, group, getId(), interfaces);
-        registry.register(registryUrl, JSON.toJSONString(serverInfo));
+        registry.register();
     }
 
     protected void unregister(){
-        String registryUrl = registryUrlPrefix + app + "/" + getId();
-        registry.unregister(registryUrl);
+        registry.unregister();
     }
     public List<Object> getHandlers() {
         return ImmutableList.copyOf(interfaceHandlerMap.values());
@@ -76,5 +76,12 @@ public abstract class AbstractServer implements Server{
 
     public static String getRegistryUrlPrefix() {
         return registryUrlPrefix;
+    }
+
+    private static String registerUrl(String app, String id) {
+        return registryUrlPrefix + app + "/" + id;
+    }
+    private static String registerData(ServerInfo serverInfo) {
+        return JSON.toJSONString(serverInfo);
     }
 }
