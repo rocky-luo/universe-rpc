@@ -89,80 +89,80 @@ public class ThriftThreadedSelectorServerTest {
     }
 
 
-    @Test
-    public void clientTest() throws TException {
-        // 服务器所在的IP和端口
-        TTransport transport = new TFramedTransport(new TSocket("127.0.0.1", 8421));
-        TProtocol protocol = new TCompactProtocol(transport);
-
-        // 准备调用参数
-        ISayHello.Iface client = new ISayHello.Client(protocol);
-
-        // 准备传输
-        transport.open();
-        // 正式调用接口
-        Person person = new Person("Jack", 18);
-        String result = client.sayHello(person);
-        String expect = new SayHelloHandler().sayHello(person);
-        Assert.assertEquals(expect, result);
-        // 一定要记住关闭
-        transport.close();
-    }
-
-    @Test
-    public void simpleServer() throws TTransportException {
-        TNonblockingServerTransport serverSocket=new TNonblockingServerSocket(8890);
-        TThreadedSelectorServer.Args serverParams=new TThreadedSelectorServer.Args(serverSocket);
-        serverParams.protocolFactory(new TCompactProtocol.Factory());
-        TProcessor processor = new ISayHello.Processor<ISayHello.Iface>(new SayHelloHandler());
-        serverParams.processor(processor);
-        serverParams.executorService(Executors.newFixedThreadPool(3));
-        TServer server=new TThreadedSelectorServer(serverParams); //简单的单线程服务模型，常用于测试
-        server.serve();
-    }
-
-    @Test
-    public void simpleClient() throws TException {
-        TTransport transport = new TFramedTransport(new TSocket("localhost", 8890));
-        TProtocol protocol = new TCompactProtocol(transport);
-        ISayHello.Client client = new ISayHello.Client(protocol);
-        transport.open();
-        Person person = new Person("jack", 18);
-        String respone = client.sayHello(person);
-    }
-
-    @Test
-    public void simpleServer2() throws TTransportException {
-        TNonblockingServerTransport serverSocket=new TNonblockingServerSocket(8891);
-        TThreadedSelectorServer.Args serverParams=new TThreadedSelectorServer.Args(serverSocket);
-        serverParams.protocolFactory(new TCompactProtocol.Factory());
-        TProcessor processor = new ISayHello.Processor<ISayHello.Iface>(new SayHelloHandler());
-        TProcessor processor1 = new ISayGoodBye.Processor<ISayGoodBye.Iface>(new SayGoodByeHandler());
-        TMultiplexedProcessor multiplexedProcessor = new TMultiplexedProcessor();
-        multiplexedProcessor.registerProcessor("1", processor);
-        multiplexedProcessor.registerProcessor("2", processor1);
-        serverParams.processor(multiplexedProcessor);
-        TServer server=new TThreadedSelectorServer(serverParams);
-        server.serve();
-    }
-    @Test
-    public void simpleClient2() throws TException {
-        TTransport transport = new TFramedTransport(new TSocket("localhost", 8891));
-        TProtocol protocol = new TCompactProtocol(transport);
-        TMultiplexedProtocol tMultiplexedProtocol = new TMultiplexedProtocol(protocol, "1");
-        ISayHello.Client client = new ISayHello.Client(tMultiplexedProtocol);
-        transport.open();
-        Person person = new Person("jack", 19);
-        String respone = client.sayHello(person);
-    }
-
-    @Test
-    public void serverStartTest() throws InterruptedException {
-        List<Object> handlers = Lists.newArrayList((Object) new SayHelloHandler());
-        Server server = new ThriftThreadedSelectorServer(handlers, "test", "default", 8421, zkConnect, 2);
-        server.start();
-        while (true);
-    }
+//    @Test
+//    public void clientTest() throws TException {
+//        // 服务器所在的IP和端口
+//        TTransport transport = new TFramedTransport(new TSocket("127.0.0.1", 8421));
+//        TProtocol protocol = new TCompactProtocol(transport);
+//
+//        // 准备调用参数
+//        ISayHello.Iface client = new ISayHello.Client(protocol);
+//
+//        // 准备传输
+//        transport.open();
+//        // 正式调用接口
+//        Person person = new Person("Jack", 18);
+//        String result = client.sayHello(person);
+//        String expect = new SayHelloHandler().sayHello(person);
+//        Assert.assertEquals(expect, result);
+//        // 一定要记住关闭
+//        transport.close();
+//    }
+//
+//    @Test
+//    public void simpleServer() throws TTransportException {
+//        TNonblockingServerTransport serverSocket=new TNonblockingServerSocket(8890);
+//        TThreadedSelectorServer.Args serverParams=new TThreadedSelectorServer.Args(serverSocket);
+//        serverParams.protocolFactory(new TCompactProtocol.Factory());
+//        TProcessor processor = new ISayHello.Processor<ISayHello.Iface>(new SayHelloHandler());
+//        serverParams.processor(processor);
+//        serverParams.executorService(Executors.newFixedThreadPool(3));
+//        TServer server=new TThreadedSelectorServer(serverParams); //简单的单线程服务模型，常用于测试
+//        server.serve();
+//    }
+//
+//    @Test
+//    public void simpleClient() throws TException {
+//        TTransport transport = new TFramedTransport(new TSocket("localhost", 8890));
+//        TProtocol protocol = new TCompactProtocol(transport);
+//        ISayHello.Client client = new ISayHello.Client(protocol);
+//        transport.open();
+//        Person person = new Person("jack", 18);
+//        String respone = client.sayHello(person);
+//    }
+//
+//    @Test
+//    public void simpleServer2() throws TTransportException {
+//        TNonblockingServerTransport serverSocket=new TNonblockingServerSocket(8891);
+//        TThreadedSelectorServer.Args serverParams=new TThreadedSelectorServer.Args(serverSocket);
+//        serverParams.protocolFactory(new TCompactProtocol.Factory());
+//        TProcessor processor = new ISayHello.Processor<ISayHello.Iface>(new SayHelloHandler());
+//        TProcessor processor1 = new ISayGoodBye.Processor<ISayGoodBye.Iface>(new SayGoodByeHandler());
+//        TMultiplexedProcessor multiplexedProcessor = new TMultiplexedProcessor();
+//        multiplexedProcessor.registerProcessor("1", processor);
+//        multiplexedProcessor.registerProcessor("2", processor1);
+//        serverParams.processor(multiplexedProcessor);
+//        TServer server=new TThreadedSelectorServer(serverParams);
+//        server.serve();
+//    }
+//    @Test
+//    public void simpleClient2() throws TException {
+//        TTransport transport = new TFramedTransport(new TSocket("localhost", 8891));
+//        TProtocol protocol = new TCompactProtocol(transport);
+//        TMultiplexedProtocol tMultiplexedProtocol = new TMultiplexedProtocol(protocol, "1");
+//        ISayHello.Client client = new ISayHello.Client(tMultiplexedProtocol);
+//        transport.open();
+//        Person person = new Person("jack", 19);
+//        String respone = client.sayHello(person);
+//    }
+//
+//    @Test
+//    public void serverStartTest() throws InterruptedException {
+//        List<Object> handlers = Lists.newArrayList((Object) new SayHelloHandler());
+//        Server server = new ThriftThreadedSelectorServer(handlers, "test", "default", 8421, zkConnect, 2);
+//        server.start();
+//        while (true);
+//    }
 
 //    @Test
 //    public void servingTest() throws TTransportException, InterruptedException {

@@ -2,6 +2,7 @@ package com.rokcy.universe.rpc.server;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.rocky.universe.rpc.common.thrift.ThriftHelper;
 import org.apache.thrift.TMultiplexedProcessor;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.server.TServer;

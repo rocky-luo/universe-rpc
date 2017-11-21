@@ -2,45 +2,26 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.rocky</groupId>
         <artifactId>universe-rpc</artifactId>
+        <groupId>com.rocky</groupId>
         <version>1.0.0</version>
     </parent>
-    <artifactId>universe-rpc-server</artifactId>
+    <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <name>${project.artifactId}</name>
+
+    <artifactId>universe-rpc-registry</artifactId>
+
     <dependencies>
         <dependency>
-            <groupId>com.rocky</groupId>
-            <artifactId>universe-rpc-registry</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.rocky</groupId>
-            <artifactId>universe-rpc-common</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-        </dependency>
-
-        <!--thrift-->
-        <dependency>
-            <groupId>org.apache.thrift</groupId>
-            <artifactId>libthrift</artifactId>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-
         <!--slf4j+log4j2-->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -51,7 +32,4 @@
             <artifactId>log4j-core</artifactId>
         </dependency>
     </dependencies>
-
-
-
 </project>

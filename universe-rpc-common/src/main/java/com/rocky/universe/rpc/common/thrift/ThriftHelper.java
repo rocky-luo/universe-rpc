@@ -1,8 +1,8 @@
-package com.rokcy.universe.rpc.server;
+package com.rocky.universe.rpc.common.thrift;
 
-import org.apache.curator.utils.PathUtils;
 import org.apache.thrift.TBaseProcessor;
 import org.apache.thrift.TProcessor;
+import org.apache.thrift.TServiceClient;
 
 /**
  * Created by rocky on 17/10/20.
@@ -77,5 +77,20 @@ public class ThriftHelper {
             }
         }
         return null;
+    }
+
+    public static Class getClientClass(Class thriftService) {
+        Class clientClass = null;
+        Class[] declaredClassed = thriftService.getDeclaredClasses();
+        for (Class c :declaredClassed) {
+            if (TServiceClient.class.isAssignableFrom(c)) {
+                clientClass = c;
+                break;
+            }
+        }
+        if (clientClass == null) {
+            throw new IllegalArgumentException("no TServiceClient found in class [" + thriftService.getName() + "]");
+        }
+        return clientClass;
     }
 }

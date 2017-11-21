@@ -1,4 +1,4 @@
-package com.rokcy.universe.rpc.server;
+package com.rocky.universe.rpc.registry;
 
 import java.util.List;
 

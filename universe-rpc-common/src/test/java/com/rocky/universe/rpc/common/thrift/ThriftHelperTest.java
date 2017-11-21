@@ -1,12 +1,15 @@
-package com.rokcy.universe.rpc.server;
+package com.rocky.universe.rpc.common.thrift;
 
-import com.rokcy.universe.rpc.server.thrift.ISayHello;
+import com.rocky.universe.rpc.common.thrift.thrift.ISayHello;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.omg.CORBA.PUBLIC_MEMBER;
+
+import static org.junit.Assert.*;
 
 /**
- * Created by rocky on 17/10/20.
+ * Created by rocky on 17/11/20.
  */
 public class ThriftHelperTest {
 
@@ -45,6 +48,12 @@ public class ThriftHelperTest {
     public void getTProcessorClass() throws Exception {
         Class clazz = ThriftHelper.getTProcessorClass(ISayHello.class);
         Assert.assertEquals(ISayHello.Processor.class, clazz);
+    }
+
+    @Test
+    public void getClientClass(){
+        Class clazz = ThriftHelper.getClientClass(ISayHello.class);
+        Assert.assertEquals(ISayHello.Client.class, clazz);
     }
 
 }
