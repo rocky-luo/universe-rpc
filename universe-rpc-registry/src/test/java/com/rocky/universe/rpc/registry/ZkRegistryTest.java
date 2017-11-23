@@ -3,10 +3,12 @@ package com.rocky.universe.rpc.registry;
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
+import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.zookeeper.WatchedEvent;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -85,6 +87,20 @@ public class ZkRegistryTest {
         pathChildrenCache.start();
         while (true);
 
+    }
+
+    @Test
+    public void listenerTest2() throws Exception {
+        RetryPolicy retryPolicy = new ExponentialBackoffRetry(100, 100);
+        CuratorFramework curatorFramework = CuratorFrameworkFactory.newClient(this.zkConnect, retryPolicy);
+        curatorFramework.start();
+        curatorFramework.getData().usingWatcher(new CuratorWatcher() {
+            @Override
+            public void process(WatchedEvent event) throws Exception {
+                System.out.println("=========>" + event);
+            }
+        }).forPath("/rocky");
+        while (true);
     }
 
 }

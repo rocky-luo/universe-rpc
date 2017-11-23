@@ -4,24 +4,26 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.rocky.universe.rpc.registry.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 
 /**
  * Created by rocky on 17/10/31.
  */
 public abstract class AbstractClient implements Client{
+    private final static Logger LOGGER = LoggerFactory.getLogger(AbstractClient.class);
     private String app;
     private String group;
     private Class interfaceClass;
     private String zkConnect;
     private Registry registry;
     private String id;
-    private Map<String, ServerInfo> idServerMap = Maps.newHashMapWithExpectedSize(10);
+    private Map<String, ServerInfo> idServerMap = Maps.newConcurrentMap();
+    volatile boolean idServerMapValid = false;
+    private Map<String, ServerInfo> backupIdServerMap = Maps.newConcurrentMap();
     private final static String registryUrlPrefix = "/universe/client/";
 
     public AbstractClient(String app, String group, Class interfaceClass, String zkConnect) {
@@ -36,6 +38,12 @@ public abstract class AbstractClient implements Client{
     @Override
     public void start() {
         listen();
+        //listen 生效需要时间,在listen生效前使用备用map
+        List<String> serverDatas = this.registry.lookup("/universe/server/" + this.app);
+        for (String sd : serverDatas) {
+            ServerInfo serverInfo = JSON.parseObject(sd, ServerInfo.class);
+            this.backupIdServerMap.put(serverInfo.getId(), serverInfo);
+        }
     }
 
     @Override
@@ -58,12 +66,20 @@ public abstract class AbstractClient implements Client{
                 }else if (notifyEvent.getEvent() == NotifyEvent.Event.DELETE_NODE) {
                     idServerMap.remove(serverInfo.getId());
                 }
+                if (!idServerMapValid) {
+                    idServerMapValid = true;
+                    LOGGER.debug("app:{}, client turn backup server map into official one", app);
+                }
             }
         });
     }
 
     protected Set<ServerInfo> availableServers() {
-        return ImmutableSet.copyOf(idServerMap.values());
+        if (this.idServerMapValid) {
+            return ImmutableSet.copyOf(this.idServerMap.values());
+        }else {
+            return ImmutableSet.copyOf(this.backupIdServerMap.values());
+        }
     }
 
     protected Class getInterfaceClass() {

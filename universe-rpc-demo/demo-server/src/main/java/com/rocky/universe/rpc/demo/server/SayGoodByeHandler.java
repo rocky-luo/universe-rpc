@@ -9,6 +9,6 @@ import org.apache.thrift.TException;
  */
 public class SayGoodByeHandler implements ISayGoodBye.Iface{
     public String sayGoodBye(Person person) throws TException {
-        return "goodbye" + person.getName() + " who is " + person.getAge();
+        return String.format("%s: goodbye, %s(%s)", Server.ID, person.getName(), person.getAge());
     }
 }

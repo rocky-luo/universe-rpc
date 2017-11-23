@@ -1,5 +1,7 @@
 package com.rocky.universe.rpc.registry;
 
+import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.curator.RetryPolicy;
@@ -115,6 +117,24 @@ public class ZkRegistry implements Registry {
                     }
                 }
             }
+        }
+    }
+
+    @Override
+    public List<String> lookup(String url) {
+        List<String> childrenData = Lists.newArrayListWithCapacity(5);
+        List<String> children = null;
+        try {
+            children = this.curatorFramework.getChildren().forPath(url);
+            for (String child :children) {
+                String childPath = url + "/" + child;
+                byte[] childByte = this.curatorFramework.getData().forPath(childPath);
+                String childString = new String(childByte, Charsets.UTF_8);
+                childrenData.add(childString);
+            }
+            return childrenData;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
