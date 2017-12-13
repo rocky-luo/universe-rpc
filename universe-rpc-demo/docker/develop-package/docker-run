@@ -1,0 +1,13 @@
+# 第一个docker
+docker run -it --net=my_network -v ~/WorkSpace/universe-rpc/:/root/universe-rpc --name server1 rocky/develop-package
+
+# 第二个docker
+docker run -it --net=my_network -v ~/WorkSpace/universe-rpc/:/root/universe-rpc --name server2 --volumes-from server1 rocky/develop-package
+
+# 在demo-server项目下启动server
+mvn exec:java -Dexec.mainClass="com.rocky.universe.rpc.demo.server.ServerMain"
+
+# 在demo-client项目下启动client
+mvn exec:java -Dexec.mainClass="com.rocky.universe.rpc.demo.client.ClientMain"
+
+

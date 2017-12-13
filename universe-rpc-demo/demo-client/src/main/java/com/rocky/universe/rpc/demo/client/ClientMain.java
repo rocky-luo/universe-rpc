@@ -14,18 +14,22 @@ import org.slf4j.LoggerFactory;
 public class ClientMain {
     private final static Logger LOGGER = LoggerFactory.getLogger(ClientMain.class);
     public static void main(String[] args) throws TException, InterruptedException {
-        ThriftClient<ISayHello.Iface> helloClient = new ThriftClient<>("test", "default", ISayHello.Iface.class, "192.168.60.40:2181");
-        ThriftClient<ISayGoodBye.Iface> goodByeClient = new ThriftClient<>("test", "default", ISayGoodBye.Iface.class, "192.168.60.40:2181");
+        ThriftClient<ISayHello.Iface> helloClient = new ThriftClient<>("test", "default", ISayHello.Iface.class, "zookeeper:2181");
+        ThriftClient<ISayGoodBye.Iface> goodByeClient = new ThriftClient<>("test", "default", ISayGoodBye.Iface.class, "zookeeper:2181");
         helloClient.start();
         goodByeClient.start();
         ISayHello.Iface helloRpc = helloClient.getThriftClient();
         ISayGoodBye.Iface goodByeRpc = goodByeClient.getThriftClient();
         while (true) {
-            String hello = helloRpc.sayHello(new Person("rocky", 18));
-            LOGGER.info(hello);
-            String goodBye = goodByeRpc.sayGoodBye(new Person("rocky", 18));
-            LOGGER.info(goodBye);
-            Thread.sleep(2000L);
+            try {
+                String hello = helloRpc.sayHello(new Person("rocky", 18));
+                LOGGER.info(hello);
+                String goodBye = goodByeRpc.sayGoodBye(new Person("rocky", 18));
+                LOGGER.info(goodBye);
+                Thread.sleep(2000L);
+            }catch (Exception e) {
+                LOGGER.error("", e);
+            }
         }
     }
 }
