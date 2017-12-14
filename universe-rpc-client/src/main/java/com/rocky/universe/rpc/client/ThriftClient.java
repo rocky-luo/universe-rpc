@@ -9,7 +9,7 @@ public class ThriftClient<T> extends AbstractClient{
     }
 
     public T getThriftClient() {
-        RetryThriftClientProxy<T> clientProxy = new RemovePeriodClientProxy<T>(this, new RoundRobinSelector<>(), 1000L * 30);
+        RetryThriftClientProxy<T> clientProxy = new FailedIgnoreClientProxy<T>(this, new RoundRobinSelector<>());
         return clientProxy.proxyClient();
     }
 }
