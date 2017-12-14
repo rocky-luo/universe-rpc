@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * Created by rocky on 17/11/15.
  */
-public class RandomSelector<T> implements Selector<T> {
+public class RandomSelector<T> extends AbstractSelector<T> {
 
     @Override
     public T select(T[] candidates) {
@@ -16,7 +16,6 @@ public class RandomSelector<T> implements Selector<T> {
         int r = intRandom(0, size - 1);
         return candidates[r];
     }
-
 
     /**
      * 生成一个int随机数

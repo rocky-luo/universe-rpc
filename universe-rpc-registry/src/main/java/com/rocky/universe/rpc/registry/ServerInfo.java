@@ -65,4 +65,30 @@ public class ServerInfo {
     public List<Class> getInterfaces() {
         return interfaces;
     }
+
+    @Override
+    public String toString() {
+        return "ServerInfo{" +
+                "app='" + app + '\'' +
+                ", ip='" + ip + '\'' +
+                ", port=" + port +
+                ", group='" + group + '\'' +
+                ", id='" + id + '\'' +
+                ", interfaces=" + interfaces +
+                '}';
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof ServerInfo)) {
+            return false;
+        }else {
+            return this.id.equals(((ServerInfo) obj).getId());
+        }
+    }
 }

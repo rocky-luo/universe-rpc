@@ -1,8 +1,7 @@
 package com.rocky.universe.rpc.client;
 
+import com.google.common.collect.Sets;
 import com.rocky.universe.rpc.common.thrift.ThriftHelper;
-import com.rocky.universe.rpc.demo.api.ISayHello;
-import com.rocky.universe.rpc.demo.api.Person;
 import com.rocky.universe.rpc.registry.ServerInfo;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TMultiplexedProtocol;
@@ -10,20 +9,22 @@ import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.*;
+import java.util.Set;
 
 /**
  * Created by rocky on 17/11/20.
  */
-public class ThriftClientProxy<T> implements InvocationHandler {
-    private ThriftClient<T> thriftClient;
-    private Selector<ServerInfo> serverSelector;
+public abstract class RetryThriftClientProxy<T> implements InvocationHandler {
+    private final static Logger LOGGER = LoggerFactory.getLogger(RetryThriftClientProxy.class);
+    protected ThriftClient<T> thriftClient;
+    protected Selector<ServerInfo> serverSelector;
 
-    public ThriftClientProxy(ThriftClient<T> thriftClient, Selector<ServerInfo> serverSelector) {
+    public RetryThriftClientProxy(ThriftClient<T> thriftClient, Selector<ServerInfo> serverSelector) {
         this.thriftClient = thriftClient;
         this.serverSelector = serverSelector;
     }
@@ -37,7 +38,24 @@ public class ThriftClientProxy<T> implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        ServerInfo selectedServer = this.serverSelector.select(this.thriftClient.availableServers().toArray(new ServerInfo[0]));
+        Set<ServerInfo> failedServers = Sets.newHashSetWithExpectedSize(10);
+        Object result = null;
+        boolean needRetry = true;
+        while (needRetry) {
+            ServerInfo selectedServer = selectServer(failedServers);
+            try {
+                result = call(selectedServer, method, args);
+                needRetry = false;
+            } catch (TTransportException e) {
+                // 加入失效server集合
+                failedServers.add(selectedServer);
+                LOGGER.debug("add a failed server {}, current failed servers are {}", selectedServer, failedServers);
+            }
+        }
+        return result;
+    }
+
+    protected Object call(ServerInfo selectedServer, Method method, Object[] args) throws TTransportException, InvocationTargetException, IllegalAccessException {
         if (selectedServer == null) {
             throw new RuntimeException("there is no server available!");
         }
@@ -55,7 +73,12 @@ public class ThriftClientProxy<T> implements InvocationHandler {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
-        T client = clientConstructor.newInstance(protocol);
+        T client = null;
+        try {
+            client = clientConstructor.newInstance(protocol);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
         try {
             transport.open();
             return method.invoke(client, args);
@@ -63,4 +86,7 @@ public class ThriftClientProxy<T> implements InvocationHandler {
             transport.close();
         }
     }
+
+    abstract protected ServerInfo selectServer(Set<ServerInfo> failedServers);
+
 }

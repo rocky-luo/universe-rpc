@@ -7,4 +7,5 @@ import java.util.List;
  */
 public interface Selector<T> {
     T select(T[] candidates);
+    T select(T[] candidates, T[] ignores);
 }

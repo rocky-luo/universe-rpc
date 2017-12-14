@@ -1,11 +1,16 @@
 package com.rocky.universe.rpc.client;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by rocky on 17/11/14.
  */
-public class RoundRobinSelector<T> implements Selector<T> {
+public class RoundRobinSelector<T> extends AbstractSelector<T> {
 
     private AtomicInteger count = new AtomicInteger(0);
 

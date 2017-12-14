@@ -22,11 +22,11 @@ public class ClientMain {
         ISayGoodBye.Iface goodByeRpc = goodByeClient.getThriftClient();
         while (true) {
             try {
+                Thread.sleep(2000L);
                 String hello = helloRpc.sayHello(new Person("rocky", 18));
                 LOGGER.info(hello);
                 String goodBye = goodByeRpc.sayGoodBye(new Person("rocky", 18));
                 LOGGER.info(goodBye);
-                Thread.sleep(2000L);
             }catch (Exception e) {
                 LOGGER.error("", e);
             }
