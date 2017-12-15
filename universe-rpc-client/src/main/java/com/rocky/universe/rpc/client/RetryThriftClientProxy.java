@@ -14,21 +14,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.*;
+import java.util.List;
 import java.util.Set;
 
 /**
  * Created by rocky on 17/11/20.
  */
-public abstract class RetryThriftClientProxy<T> implements InvocationHandler {
+public abstract class RetryThriftClientProxy<T> extends AbstractClientProxy<T> implements InvocationHandler {
     private final static Logger LOGGER = LoggerFactory.getLogger(RetryThriftClientProxy.class);
     protected ThriftClient<T> thriftClient;
     protected Selector<ServerInfo> serverSelector;
 
-    public RetryThriftClientProxy(ThriftClient<T> thriftClient, Selector<ServerInfo> serverSelector) {
+    public RetryThriftClientProxy(List<ProxyProcessor> proxyProcessors, ThriftClient<T> thriftClient, Selector<ServerInfo> serverSelector) {
+        super(proxyProcessors);
         this.thriftClient = thriftClient;
         this.serverSelector = serverSelector;
     }
 
+    @Override
     public T proxyClient() {
         Class[] ifaces = {this.thriftClient.getInterfaceClass()};
         return (T) Proxy.newProxyInstance(this.thriftClient.getClass().getClassLoader(),
@@ -44,7 +47,7 @@ public abstract class RetryThriftClientProxy<T> implements InvocationHandler {
         while (needRetry) {
             ServerInfo selectedServer = selectServer(failedServers);
             try {
-                result = call(selectedServer, method, args);
+                result = process(invokeContext(selectedServer), method, args);
                 needRetry = false;
             } catch (TTransportException e) {
                 // 加入失效server集合
@@ -55,6 +58,7 @@ public abstract class RetryThriftClientProxy<T> implements InvocationHandler {
         return result;
     }
 
+    @Override
     protected Object call(ServerInfo selectedServer, Method method, Object[] args) throws TTransportException, InvocationTargetException, IllegalAccessException {
         if (selectedServer == null) {
             throw new RuntimeException("there is no server available!");
@@ -88,5 +92,19 @@ public abstract class RetryThriftClientProxy<T> implements InvocationHandler {
     }
 
     abstract protected ServerInfo selectServer(Set<ServerInfo> failedServers);
+
+    private InvokeContext invokeContext(ServerInfo serverInfo) {
+        InvokeContext invokeContext = new InvokeContext();
+        invokeContext.setApp(this.thriftClient.getApp());
+        ClientContext clientContext = new ClientContext(this.thriftClient.getId());
+        ServerContext serverContext = new ServerContext();
+        serverContext.setId(serverInfo.getId());
+        serverContext.setIp(serverInfo.getIp());
+        serverContext.setPort(serverInfo.getPort());
+        serverContext.setServerInfo(serverInfo);
+        invokeContext.setClientContext(clientContext);
+        invokeContext.setServerContext(serverContext);
+        return invokeContext;
+    }
 
 }

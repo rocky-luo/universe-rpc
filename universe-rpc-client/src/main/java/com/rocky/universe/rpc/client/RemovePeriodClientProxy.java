@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.rocky.universe.rpc.registry.ServerInfo;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -17,8 +18,13 @@ public class RemovePeriodClientProxy<T> extends RetryThriftClientProxy<T> {
     private Set<RemovedServerInfo> removedServerInfos = Sets.newConcurrentHashSet();
     private ReentrantLock removeSetLock = new ReentrantLock();
 
+    public RemovePeriodClientProxy(List<ProxyProcessor> proxyProcessors, ThriftClient thriftClient, Selector serverSelector, long removeTimeMills) {
+        super(proxyProcessors, thriftClient, serverSelector);
+        this.removeTimeMills = removeTimeMills;
+    }
+
     public RemovePeriodClientProxy(ThriftClient thriftClient, Selector serverSelector, long removeTimeMills) {
-        super(thriftClient, serverSelector);
+        super(Collections.emptyList(), thriftClient, serverSelector);
         this.removeTimeMills = removeTimeMills;
     }
 

@@ -85,4 +85,12 @@ public abstract class AbstractClient implements Client{
     protected Class getInterfaceClass() {
         return interfaceClass;
     }
+
+    public String getApp() {
+        return app;
+    }
+
+    public String getId() {
+        return id;
+    }
 }
